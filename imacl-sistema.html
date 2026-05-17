@@ -671,7 +671,7 @@ textarea{resize:vertical;min-height:65px;}
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════
 const SB = 'https://cgktmiqciiciffdakxic.supabase.co';
-const SK = 'sb_publishable_tb5DI4koNGFPbQ0e0I2iSw_tcbXLsHi';
+const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNna3RtaXFjaWljaWZmZGFreGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0OTMzMzUsImV4cCI6MjA5MzA2OTMzNX0.TPfJRyj1qZ6BYC0g9jPvkIntWc_9vqHhIj7Og92WfXc';
 const H = {'Content-Type':'application/json','apikey':SK,'Authorization':`Bearer ${SK}`};
 
 const sb = {
@@ -707,8 +707,14 @@ async function doLogin() {
   const email = document.getElementById('lEmail').value.trim();
   const pass = document.getElementById('lPass').value;
   if(!email||!pass){showErr('Ingresa correo y contraseña');return;}
+  const loginBtn = document.querySelector('.login-btn');
+  loginBtn.textContent = 'Ingresando…';
+  loginBtn.disabled = true;
   try {
-    const users = await sb.get('usuarios', `email=eq.${encodeURIComponent(email)}&activo=eq.true`);
+    const resp = await fetch(`${SB}/rest/v1/usuarios?email=eq.${encodeURIComponent(email)}&activo=eq.true`, {headers:H});
+    const users = await resp.json();
+    loginBtn.textContent = 'Ingresar →';
+    loginBtn.disabled = false;
     if(!Array.isArray(users)||!users.length){showErr('Correo o contraseña incorrectos');return;}
     const user = users[0];
     if(user.password !== pass){showErr('Correo o contraseña incorrectos');return;}
@@ -721,7 +727,9 @@ async function doLogin() {
     applyPermisos(user.permisos);
     await loadAll();
   } catch(e) {
-    showErr('Error de conexión. Intenta de nuevo.');
+    loginBtn.textContent = 'Ingresar →';
+    loginBtn.disabled = false;
+    showErr('Error de conexión. Verifica tu internet.');
   }
 }
 
